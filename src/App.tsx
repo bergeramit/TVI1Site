@@ -43,14 +43,25 @@ function App() {
   const [isFormVisible, setIsFormVisible] = useState(false);
 
   useEffect(() => {
-    fetchHandshakes();
-  }, []);
+    fetchHandshakes(); // Initial fetch
+    
+    // Set up polling every 5 seconds
+    const interval = setInterval(() => {
+      fetchHandshakes();
+    }, 5000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, []); // Empty dependency array since we want this to run once on mount
 
   const fetchHandshakes = async () => {
     try {
       const response = await fetch('http://localhost:3000/api/handshakes');
       const data = await response.json();
-      setHandshakes(data);
+      // Only update if the data is different
+      if (JSON.stringify(data) !== JSON.stringify(handshakes)) {
+        setHandshakes(data);
+      }
     } catch (error) {
       console.error('Error fetching handshakes:', error);
     }
